@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'pages/login.dart';
+import 'pages/register.dart';
 import 'pages/home.dart';
 import 'pages/challenges.dart';
 import 'pages/quests.dart';
@@ -7,7 +10,13 @@ import 'pages/status.dart';
 import 'pages/profile.dart';
 import 'assets/colors.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
+  );
   runApp(const StarFallApp());
 }
 
@@ -21,7 +30,7 @@ class StarFallApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: AppColors.background,
+        scaffoldBackgroundColor: Colors.transparent,
         colorScheme: const ColorScheme.dark(
           primary: AppColors.primary,
           secondary: AppColors.shadow,
@@ -33,7 +42,11 @@ class StarFallApp extends StatelessWidget {
           unselectedItemColor: AppColors.textMuted,
         ),
       ),
-      home: const Navbar(),
+      home: const LoginPage(),
+      routes: {
+        '/home': (context) => const Navbar(),
+        '/register': (context) => const RegisterPage(),
+      },
     );
   }
 }
@@ -71,7 +84,17 @@ class _NavbarState extends State<Navbar> {
           ),
         ],
       ),
-      body: _pages[_index],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'lib/assets/images/wallpaperstarfall.png',
+            fit: BoxFit.cover,
+          ),
+          _pages[_index],
+        ],
+      ),
+
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _index,
